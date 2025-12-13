@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Study Assistant - Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Welcome Section -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-gray-800 mb-4">Welcome to Your Study Assistant</h1>
+        <p class="text-xl text-gray-600">Your AI-powered companion for smarter studying</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div id="statsSection" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover transition">
+            <div class="flex items-center gap-4">
+                <div class="bg-purple-100 p-3 rounded-lg">
+                    <i class="fas fa-clock text-purple-600 text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Hours Studied</p>
+                    <p id="hoursStudied" class="text-2xl font-bold text-gray-800">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover transition">
+            <div class="flex items-center gap-4">
+                <div class="bg-green-100 p-3 rounded-lg">
+                    <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Tasks Completed</p>
+                    <p id="tasksCompleted" class="text-2xl font-bold text-gray-800">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover transition">
+            <div class="flex items-center gap-4">
+                <div class="bg-blue-100 p-3 rounded-lg">
+                    <i class="fas fa-book text-blue-600 text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Documents</p>
+                    <p id="totalDocs" class="text-2xl font-bold text-gray-800">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover transition">
+            <div class="flex items-center gap-4">
+                <div class="bg-yellow-100 p-3 rounded-lg">
+                    <i class="fas fa-percentage text-yellow-600 text-2xl"></i>
+                </div>
+                <div>
+                    <p class="text-gray-500 text-sm">Completion Rate</p>
+                    <p id="completionRate" class="text-2xl font-bold text-gray-800">0%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <!-- Create Plan Card -->
+        <a href="/plan" class="bg-white rounded-xl shadow-md p-8 card-hover transition block">
+            <div class="text-center">
+                <div class="bg-gradient-to-r from-purple-500 to-indigo-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-calendar-plus text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Create Study Plan</h3>
+                <p class="text-gray-600">Let AI create a personalized study schedule based on your subjects, goals, and available time.</p>
+            </div>
+        </a>
+
+        <!-- Today's Tasks Card -->
+        <a href="/schedule" class="bg-white rounded-xl shadow-md p-8 card-hover transition block">
+            <div class="text-center">
+                <div class="bg-gradient-to-r from-green-500 to-teal-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-tasks text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Today's Tasks</h3>
+                <p class="text-gray-600">View and manage your daily study tasks. Mark them complete or reschedule if needed.</p>
+            </div>
+        </a>
+
+        <!-- Notes & Doubts Card -->
+        <a href="/knowledge" class="bg-white rounded-xl shadow-md p-8 card-hover transition block">
+            <div class="text-center">
+                <div class="bg-gradient-to-r from-orange-500 to-red-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-question-circle text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Ask Your Doubts</h3>
+                <p class="text-gray-600">Upload your notes and ask questions. Get instant answers from your own study materials.</p>
+            </div>
+        </a>
+    </div>
+
+    <!-- Chat Section -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-comments mr-2 text-purple-600"></i>
+            Quick Chat
+        </h2>
+        <div id="chatMessages" class="h-64 overflow-y-auto border rounded-lg p-4 mb-4 bg-gray-50">
+            <div class="text-center text-gray-500 py-8">
+                <i class="fas fa-robot text-4xl mb-2"></i>
+                <p>Hi! I'm your study assistant. Ask me anything about studying, planning, or your notes!</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <input type="text" id="chatInput" placeholder="Ask me anything..." 
+                   class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <button onclick="sendChat()" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Load stats on page load
+    async function loadStats() {
+        const [scheduleStats, knowledgeStats] = await Promise.all([
+            apiCall('/api/schedule/stats'),
+            apiCall('/api/knowledge/stats')
+        ]);
+        
+        if (scheduleStats) {
+            document.getElementById('hoursStudied').textContent = scheduleStats.hours_studied || 0;
+            document.getElementById('tasksCompleted').textContent = scheduleStats.completed || 0;
+            document.getElementById('completionRate').textContent = (scheduleStats.completion_rate || 0) + '%';
+        }
+        
+        if (knowledgeStats) {
+            document.getElementById('totalDocs').textContent = knowledgeStats.total_documents || 0;
+        }
+    }
+    
+    // Chat functionality
+    async function sendChat() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        if (!message) return;
+        
+        // Add user message
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.innerHTML += `
+            <div class="flex justify-end mb-3">
+                <div class="bg-purple-600 text-white rounded-lg px-4 py-2 max-w-md">
+                    ${message}
+                </div>
+            </div>
+        `;
+        input.value = '';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Get response
+        const response = await apiCall('/api/chat/', 'POST', { message });
+        
+        if (response && response.success) {
+            const answer = response.response.message || response.response.answer || 'I processed your request.';
+            chatMessages.innerHTML += `
+                <div class="flex justify-start mb-3">
+                    <div class="bg-gray-200 rounded-lg px-4 py-2 max-w-md">
+                        <p class="whitespace-pre-wrap">${answer}</p>
+                    </div>
+                </div>
+            `;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    }
+    
+    // Enter key to send
+    document.getElementById('chatInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChat();
+    });
+    
+    // Load stats on page load
+    loadStats();
+</script>
+{% endblock %}

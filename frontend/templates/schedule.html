@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Today's Tasks{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Today's Study Tasks</h1>
+        <p id="currentDate" class="text-gray-600"></p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-md p-6 text-center">
+            <i class="fas fa-clock text-3xl text-purple-600 mb-2"></i>
+            <p class="text-gray-500">Total Hours</p>
+            <p id="totalHours" class="text-2xl font-bold text-gray-800">0</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-md p-6 text-center">
+            <i class="fas fa-check-circle text-3xl text-green-600 mb-2"></i>
+            <p class="text-gray-500">Completed</p>
+            <p id="completedTasks" class="text-2xl font-bold text-gray-800">0</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-md p-6 text-center">
+            <i class="fas fa-hourglass-half text-3xl text-yellow-600 mb-2"></i>
+            <p class="text-gray-500">Pending</p>
+            <p id="pendingTasks" class="text-2xl font-bold text-gray-800">0</p>
+        </div>
+    </div>
+
+    <!-- Tasks List -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-gray-800">
+                <i class="fas fa-tasks mr-2 text-purple-600"></i>
+                Tasks for Today
+            </h2>
+            <input type="date" id="dateSelector" onchange="loadTasks()"
+                   class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+        
+        <div id="tasksList" class="space-y-4">
+            <div class="text-center text-gray-500 py-8">
+                <i class="fas fa-spinner fa-spin text-3xl"></i>
+                <p class="mt-2">Loading tasks...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly Overview -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-6">
+            <i class="fas fa-calendar-week mr-2 text-purple-600"></i>
+            This Week
+        </h2>
+        <div id="weeklyOverview" class="grid grid-cols-7 gap-2">
+            <!-- Days will be populated by JS -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Set date selector to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('dateSelector').value = today;
+    document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+    
+    async function loadTasks() {
+        const date = document.getElementById('dateSelector').value;
+        const result = await apiCall(`/api/schedule/today?date=${date}`);
+        
+        if (!result) return;
+        
+        const tasksList = document.getElementById('tasksList');
+        
+        if (!result.tasks || result.tasks.length === 0) {
+            tasksList.innerHTML = `
+                <div class="text-center text-gray-500 py-8">
+                    <i class="fas fa-calendar-check text-4xl mb-2"></i>
+                    <p>${result.message || 'No tasks scheduled for this day.'}</p>
+                    <a href="/plan" class="text-purple-600 hover:underline mt-2 inline-block">
+                        Create a study plan
+                    </a>
+                </div>
+            `;
+            document.getElementById('totalHours').textContent = '0';
+            document.getElementById('completedTasks').textContent = '0';
+            document.getElementById('pendingTasks').textContent = '0';
+            return;
+        }
+        
+        let html = '';
+        let completed = 0;
+        let pending = 0;
+        
+        result.tasks.forEach(task => {
+            const statusClass = task.status === 'completed' ? 'bg-green-100 border-green-300' :
+                               task.status === 'skipped' ? 'bg-red-100 border-red-300' :
+                               'bg-gray-50 border-gray-200';
+            
+            const statusBadge = task.status === 'completed' ? 
+                '<span class="bg-green-500 text-white text-xs px-2 py-1 rounded">Completed</span>' :
+                task.status === 'skipped' ?
+                '<span class="bg-red-500 text-white text-xs px-2 py-1 rounded">Skipped</span>' :
+                '<span class="bg-yellow-500 text-white text-xs px-2 py-1 rounded">Pending</span>';
+            
+            if (task.status === 'completed') completed++;
+            else if (task.status === 'pending') pending++;
+            
+            html += `
+                <div class="flex items-center justify-between p-4 border rounded-lg ${statusClass}">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-purple-100 p-3 rounded-lg">
+                            <i class="fas fa-book text-purple-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">${task.subject}</h4>
+                            <p class="text-gray-600">${task.topic}</p>
+                            <p class="text-sm text-gray-500">${task.duration_hours} hours</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        ${statusBadge}
+                        ${task.status === 'pending' ? `
+                            <button onclick="markComplete(${task.id})" 
+                                    class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition text-sm">
+                                <i class="fas fa-check mr-1"></i> Done
+                            </button>
+                            <button onclick="markSkipped(${task.id})" 
+                                    class="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500 transition text-sm">
+                                <i class="fas fa-times mr-1"></i> Skip
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        
+        tasksList.innerHTML = html;
+        document.getElementById('totalHours').textContent = result.total_hours.toFixed(1);
+        document.getElementById('completedTasks').textContent = completed;
+        document.getElementById('pendingTasks').textContent = pending;
+    }
+    
+    async function markComplete(sessionId) {
+        const result = await apiCall('/api/schedule/update-status', 'POST', {
+            session_id: sessionId,
+            status: 'completed'
+        });
+        
+        if (result && result.success) {
+            loadTasks();
+        }
+    }
+    
+    async function markSkipped(sessionId) {
+        const reason = prompt('Why are you skipping this task? (optional)');
+        
+        const result = await apiCall('/api/schedule/update-status', 'POST', {
+            session_id: sessionId,
+            status: 'skipped',
+            notes: reason || null
+        });
+        
+        if (result && result.success) {
+            loadTasks();
+        }
+    }
+    
+    async function loadWeeklyOverview() {
+        const result = await apiCall('/api/schedule/week');
+        
+        if (!result || !result.days) return;
+        
+        const container = document.getElementById('weeklyOverview');
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        
+        let html = '';
+        days.forEach(day => {
+            const dayData = result.days[day] || { tasks: [] };
+            const taskCount = dayData.tasks?.length || 0;
+            const completedCount = dayData.tasks?.filter(t => t.status === 'completed').length || 0;
+            
+            const isToday = dayData.date === today;
+            const bgClass = isToday ? 'bg-purple-100 border-purple-300' : 'bg-gray-50';
+            
+            html += `
+                <div class="text-center p-3 rounded-lg border ${bgClass}">
+                    <p class="text-xs text-gray-500 uppercase">${day.substring(0, 3)}</p>
+                    <p class="font-bold text-lg ${isToday ? 'text-purple-600' : 'text-gray-800'}">${taskCount}</p>
+                    <p class="text-xs text-gray-500">${completedCount}/${taskCount} done</p>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+    
+    // Load data on page load
+    loadTasks();
+    loadWeeklyOverview();
+</script>
+{% endblock %}

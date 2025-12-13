@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}Create Study Plan{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Create Your Study Plan</h1>
+        <p class="text-gray-600">Tell me about your subjects and I'll create a personalized study schedule</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-md p-8">
+        <form id="planForm" onsubmit="createPlan(event)">
+            <!-- Subjects Section -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-book-open mr-2 text-purple-600"></i>
+                    Subjects to Study
+                </h3>
+                <div id="subjectsList" class="space-y-4">
+                    <div class="subject-item flex gap-4 items-start p-4 bg-gray-50 rounded-lg">
+                        <div class="flex-1">
+                            <label class="block text-sm text-gray-600 mb-1">Subject Name</label>
+                            <input type="text" name="subject_name" required
+                                   class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                   placeholder="e.g., Mathematics">
+                        </div>
+                        <div class="w-32">
+                            <label class="block text-sm text-gray-600 mb-1">Priority</label>
+                            <select name="subject_priority" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="1">High</option>
+                                <option value="2" selected>Medium</option>
+                                <option value="3">Low</option>
+                            </select>
+                        </div>
+                        <div class="w-40">
+                            <label class="block text-sm text-gray-600 mb-1">Exam Date (optional)</label>
+                            <input type="date" name="subject_exam"
+                                   class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <button type="button" onclick="removeSubject(this)" class="mt-6 text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" onclick="addSubject()" 
+                        class="mt-4 text-purple-600 hover:text-purple-800 flex items-center gap-2">
+                    <i class="fas fa-plus-circle"></i> Add Another Subject
+                </button>
+            </div>
+
+            <!-- Study Preferences -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-cog mr-2 text-purple-600"></i>
+                    Study Preferences
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Hours per Day</label>
+                        <input type="number" id="hoursPerDay" value="4" min="1" max="12" step="0.5"
+                               class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Start Date</label>
+                        <input type="date" id="startDate"
+                               class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Goals -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-bullseye mr-2 text-purple-600"></i>
+                    Study Goals (optional)
+                </h3>
+                <textarea id="studyGoals" rows="3" 
+                          class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          placeholder="e.g., Prepare for final exams, focus on understanding concepts..."></textarea>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" 
+                    class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:opacity-90 transition flex items-center justify-center gap-2">
+                <i class="fas fa-magic"></i>
+                Generate Study Plan
+            </button>
+        </form>
+    </div>
+
+    <!-- Plan Result Section (hidden initially) -->
+    <div id="planResult" class="hidden mt-8 bg-white rounded-xl shadow-md p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">
+            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+            Your Study Plan
+        </h2>
+        <div id="planContent"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Set default start date to today
+    document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+    
+    function addSubject() {
+        const container = document.getElementById('subjectsList');
+        const newItem = document.createElement('div');
+        newItem.className = 'subject-item flex gap-4 items-start p-4 bg-gray-50 rounded-lg';
+        newItem.innerHTML = `
+            <div class="flex-1">
+                <label class="block text-sm text-gray-600 mb-1">Subject Name</label>
+                <input type="text" name="subject_name" required
+                       class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                       placeholder="e.g., Physics">
+            </div>
+            <div class="w-32">
+                <label class="block text-sm text-gray-600 mb-1">Priority</label>
+                <select name="subject_priority" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <option value="1">High</option>
+                    <option value="2" selected>Medium</option>
+                    <option value="3">Low</option>
+                </select>
+            </div>
+            <div class="w-40">
+                <label class="block text-sm text-gray-600 mb-1">Exam Date (optional)</label>
+                <input type="date" name="subject_exam"
+                       class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <button type="button" onclick="removeSubject(this)" class="mt-6 text-red-500 hover:text-red-700">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        container.appendChild(newItem);
+    }
+    
+    function removeSubject(btn) {
+        const items = document.querySelectorAll('.subject-item');
+        if (items.length > 1) {
+            btn.closest('.subject-item').remove();
+        } else {
+            alert('You need at least one subject!');
+        }
+    }
+    
+    async function createPlan(event) {
+        event.preventDefault();
+        
+        // Collect subjects
+        const subjects = [];
+        const items = document.querySelectorAll('.subject-item');
+        items.forEach(item => {
+            const name = item.querySelector('[name="subject_name"]').value;
+            const priority = parseInt(item.querySelector('[name="subject_priority"]').value);
+            const examDate = item.querySelector('[name="subject_exam"]').value;
+            
+            if (name) {
+                subjects.push({
+                    name,
+                    priority,
+                    exam_date: examDate || null
+                });
+            }
+        });
+        
+        if (subjects.length === 0) {
+            alert('Please add at least one subject');
+            return;
+        }
+        
+        const requestData = {
+            subjects,
+            hours_per_day: parseFloat(document.getElementById('hoursPerDay').value),
+            goals: document.getElementById('studyGoals').value || null,
+            start_date: document.getElementById('startDate').value || null
+        };
+        
+        const result = await apiCall('/api/plans/create', 'POST', requestData);
+        
+        if (result && result.success) {
+            displayPlan(result);
+        } else {
+            alert('Failed to create plan: ' + (result?.error || 'Unknown error'));
+        }
+    }
+    
+    function displayPlan(result) {
+        const planResult = document.getElementById('planResult');
+        const planContent = document.getElementById('planContent');
+        
+        const plan = result.plan_data;
+        
+        let html = `
+            <div class="mb-6">
+                <h3 class="font-semibold text-lg text-gray-700 mb-3">
+                    <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                    Plan Overview
+                </h3>
+                <p class="text-gray-600">Daily study hours: ${plan.daily_study_hours || 4} hours</p>
+            </div>
+        `;
+        
+        // Subjects and Topics
+        if (plan.subjects && plan.subjects.length > 0) {
+            html += `<div class="mb-6">
+                <h3 class="font-semibold text-lg text-gray-700 mb-3">
+                    <i class="fas fa-list mr-2 text-green-500"></i>
+                    Subjects & Topics
+                </h3>
+                <div class="space-y-4">`;
+            
+            plan.subjects.forEach(subject => {
+                html += `
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-gray-800">${subject.name}</h4>
+                        <ul class="mt-2 space-y-1">`;
+                
+                if (subject.topics) {
+                    subject.topics.forEach(topic => {
+                        html += `<li class="text-gray-600 flex items-center gap-2">
+                            <i class="fas fa-chevron-right text-xs text-purple-500"></i>
+                            ${topic.name} (${topic.estimated_hours}h, ${topic.difficulty})
+                        </li>`;
+                    });
+                }
+                
+                html += `</ul></div>`;
+            });
+            
+            html += `</div></div>`;
+        }
+        
+        // Weekly Schedule
+        if (plan.weekly_schedule) {
+            html += `<div class="mb-6">
+                <h3 class="font-semibold text-lg text-gray-700 mb-3">
+                    <i class="fas fa-calendar-week mr-2 text-purple-500"></i>
+                    Weekly Schedule
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
+            
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            days.forEach(day => {
+                const tasks = plan.weekly_schedule[day] || [];
+                html += `
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-gray-800 capitalize">${day}</h4>
+                        <ul class="mt-2 text-sm text-gray-600">`;
+                
+                if (tasks.length > 0) {
+                    tasks.forEach(task => {
+                        html += `<li class="py-1">${task.subject}: ${task.topic || 'Study'} (${task.duration_hours}h)</li>`;
+                    });
+                } else {
+                    html += `<li class="text-gray-400">Rest day</li>`;
+                }
+                
+                html += `</ul></div>`;
+            });
+            
+            html += `</div></div>`;
+        }
+        
+        // Recommendations
+        if (plan.recommendations && plan.recommendations.length > 0) {
+            html += `<div class="mb-6">
+                <h3 class="font-semibold text-lg text-gray-700 mb-3">
+                    <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>
+                    Recommendations
+                </h3>
+                <ul class="space-y-2">`;
+            
+            plan.recommendations.forEach(tip => {
+                html += `<li class="flex items-start gap-2 text-gray-600">
+                    <i class="fas fa-check text-green-500 mt-1"></i>
+                    ${tip}
+                </li>`;
+            });
+            
+            html += `</ul></div>`;
+        }
+        
+        html += `<div class="mt-6 flex gap-4">
+            <a href="/schedule" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+                <i class="fas fa-arrow-right mr-2"></i> View Today's Tasks
+            </a>
+            <button onclick="document.getElementById('planResult').classList.add('hidden')" 
+                    class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition">
+                Create Another Plan
+            </button>
+        </div>`;
+        
+        planContent.innerHTML = html;
+        planResult.classList.remove('hidden');
+        planResult.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+{% endblock %}

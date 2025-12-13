@@ -1,0 +1,444 @@
+{% extends "base.html" %}
+
+{% block title %}Notes & Doubts{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Your Knowledge Base</h1>
+        <p class="text-gray-600">Upload notes, ask questions, and get instant answers</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: Upload & Documents -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Upload Section -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">
+                    <i class="fas fa-upload mr-2 text-purple-600"></i>
+                    Upload Notes
+                </h2>
+                <form id="uploadForm" onsubmit="uploadDocument(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">PDF File</label>
+                        <input type="file" id="fileInput" accept=".pdf" required
+                               class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Subject</label>
+                        <input type="text" id="subjectInput" placeholder="e.g., Physics, Chemistry"
+                               class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i>
+                        Upload
+                    </button>
+                </form>
+            </div>
+
+            <!-- Documents List -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">
+                    <i class="fas fa-file-alt mr-2 text-purple-600"></i>
+                    Your Documents
+                </h2>
+                <div id="documentsList" class="space-y-2 max-h-64 overflow-y-auto">
+                    <p class="text-gray-500 text-center py-4">Loading documents...</p>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">
+                    <i class="fas fa-chart-pie mr-2 text-purple-600"></i>
+                    Stats
+                </h2>
+                <div id="knowledgeStats" class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Documents:</span>
+                        <span id="statDocs" class="font-semibold">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Text Chunks:</span>
+                        <span id="statChunks" class="font-semibold">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Subjects:</span>
+                        <span id="statSubjects" class="font-semibold">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Ask Questions -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">
+                    <i class="fas fa-question-circle mr-2 text-purple-600"></i>
+                    Ask Your Doubt
+                </h2>
+                
+                <!-- Question Type Tabs -->
+                <div class="flex gap-2 mb-4 border-b">
+                    <button onclick="setMode('ask')" id="btnAsk" 
+                            class="px-4 py-2 border-b-2 border-purple-600 text-purple-600 font-semibold">
+                        Ask Question
+                    </button>
+                    <button onclick="setMode('explain')" id="btnExplain"
+                            class="px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        Explain Topic
+                    </button>
+                    <button onclick="setMode('quiz')" id="btnQuiz"
+                            class="px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        Generate Quiz
+                    </button>
+                </div>
+
+                <!-- Question Input -->
+                <div class="mb-4">
+                    <textarea id="questionInput" rows="3" 
+                              class="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              placeholder="Type your question here..."></textarea>
+                </div>
+
+                <div class="flex gap-4 mb-6">
+                    <select id="subjectFilter" class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">All Subjects</option>
+                    </select>
+                    <button onclick="submitQuestion()" class="flex-1 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        <span id="submitBtnText">Ask</span>
+                    </button>
+                </div>
+
+                <!-- Answer Section -->
+                <div id="answerSection" class="hidden">
+                    <div class="border-t pt-4">
+                        <h3 class="font-semibold text-gray-800 mb-3">
+                            <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                            Answer
+                        </h3>
+                        <div id="answerContent" class="prose max-w-none text-gray-700 bg-gray-50 p-4 rounded-lg">
+                        </div>
+                        <div id="sourcesSection" class="hidden mt-4">
+                            <h4 class="text-sm font-semibold text-gray-600 mb-2">Sources from your notes:</h4>
+                            <div id="sourcesList" class="space-y-1"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Section (hidden initially) -->
+                <div id="quizSection" class="hidden">
+                    <div class="border-t pt-4">
+                        <h3 class="font-semibold text-gray-800 mb-3">
+                            <i class="fas fa-brain text-purple-500 mr-2"></i>
+                            Quiz
+                        </h3>
+                        <div id="quizContent" class="space-y-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentMode = 'ask';
+    
+    function setMode(mode) {
+        currentMode = mode;
+        
+        // Update tab styles
+        document.querySelectorAll('[id^="btn"]').forEach(btn => {
+            btn.classList.remove('border-purple-600', 'text-purple-600', 'font-semibold');
+            btn.classList.add('border-transparent', 'text-gray-500');
+        });
+        
+        const activeBtn = document.getElementById('btn' + mode.charAt(0).toUpperCase() + mode.slice(1));
+        activeBtn.classList.remove('border-transparent', 'text-gray-500');
+        activeBtn.classList.add('border-purple-600', 'text-purple-600', 'font-semibold');
+        
+        // Update placeholder and button text
+        const input = document.getElementById('questionInput');
+        const submitBtn = document.getElementById('submitBtnText');
+        
+        if (mode === 'ask') {
+            input.placeholder = 'Type your question here...';
+            submitBtn.textContent = 'Ask';
+        } else if (mode === 'explain') {
+            input.placeholder = 'Enter a topic to explain...';
+            submitBtn.textContent = 'Explain';
+        } else {
+            input.placeholder = 'Enter a topic for quiz questions...';
+            submitBtn.textContent = 'Generate Quiz';
+        }
+        
+        // Hide answer/quiz sections
+        document.getElementById('answerSection').classList.add('hidden');
+        document.getElementById('quizSection').classList.add('hidden');
+    }
+    
+    async function loadDocuments() {
+        const result = await apiCall('/api/knowledge/documents');
+        const container = document.getElementById('documentsList');
+        
+        if (!result || !result.documents || result.documents.length === 0) {
+            container.innerHTML = `
+                <p class="text-gray-500 text-center py-4">
+                    No documents uploaded yet.<br>
+                    Upload your notes to get started!
+                </p>
+            `;
+            return;
+        }
+        
+        let html = '';
+        const subjects = new Set();
+        
+        result.documents.forEach(doc => {
+            subjects.add(doc.subject);
+            html += `
+                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div class="flex items-center gap-2 truncate">
+                        <i class="fas fa-file-pdf text-red-500"></i>
+                        <span class="text-sm truncate" title="${doc.filename}">${doc.filename}</span>
+                    </div>
+                    <button onclick="deleteDocument(${doc.id})" class="text-red-500 hover:text-red-700 text-sm">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        
+        // Update subject filter
+        const filter = document.getElementById('subjectFilter');
+        filter.innerHTML = '<option value="">All Subjects</option>';
+        subjects.forEach(s => {
+            filter.innerHTML += `<option value="${s}">${s}</option>`;
+        });
+    }
+    
+    async function loadStats() {
+        const result = await apiCall('/api/knowledge/stats');
+        if (result) {
+            document.getElementById('statDocs').textContent = result.total_documents || 0;
+            document.getElementById('statChunks').textContent = result.total_chunks || 0;
+            document.getElementById('statSubjects').textContent = result.subjects?.length || 0;
+        }
+    }
+    
+    async function uploadDocument(event) {
+        event.preventDefault();
+        
+        const fileInput = document.getElementById('fileInput');
+        const subject = document.getElementById('subjectInput').value || 'general';
+        
+        if (!fileInput.files[0]) {
+            alert('Please select a file');
+            return;
+        }
+        
+        showLoading();
+        
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        formData.append('subject', subject);
+        
+        try {
+            const response = await fetch('/api/knowledge/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                alert(`Uploaded successfully! Created ${result.chunks_created} text chunks.`);
+                fileInput.value = '';
+                document.getElementById('subjectInput').value = '';
+                loadDocuments();
+                loadStats();
+            } else {
+                alert('Upload failed: ' + (result.detail || 'Unknown error'));
+            }
+        } catch (error) {
+            alert('Upload failed: ' + error.message);
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function deleteDocument(docId) {
+        if (!confirm('Are you sure you want to delete this document?')) return;
+        
+        const result = await apiCall(`/api/knowledge/documents/${docId}`, 'DELETE');
+        if (result && result.success) {
+            loadDocuments();
+            loadStats();
+        }
+    }
+    
+    async function submitQuestion() {
+        const question = document.getElementById('questionInput').value.trim();
+        const subject = document.getElementById('subjectFilter').value;
+        
+        if (!question) {
+            alert('Please enter a question or topic');
+            return;
+        }
+        
+        let result;
+        
+        if (currentMode === 'ask') {
+            result = await apiCall('/api/knowledge/ask', 'POST', {
+                question: question,
+                subject: subject || null
+            });
+            displayAnswer(result);
+        } else if (currentMode === 'explain') {
+            result = await apiCall('/api/knowledge/explain', 'POST', {
+                topic: question,
+                depth: 'detailed'
+            });
+            displayExplanation(result);
+        } else {
+            result = await apiCall('/api/knowledge/quiz', 'POST', {
+                topic: question,
+                num_questions: 5
+            });
+            displayQuiz(result);
+        }
+    }
+    
+    function displayAnswer(result) {
+        const section = document.getElementById('answerSection');
+        const content = document.getElementById('answerContent');
+        const sourcesSection = document.getElementById('sourcesSection');
+        const sourcesList = document.getElementById('sourcesList');
+        
+        document.getElementById('quizSection').classList.add('hidden');
+        
+        if (!result || !result.success) {
+            content.innerHTML = `<p class="text-red-500">Error: ${result?.error || 'Failed to get answer'}</p>`;
+            section.classList.remove('hidden');
+            return;
+        }
+        
+        content.innerHTML = `<p class="whitespace-pre-wrap">${result.answer}</p>`;
+        
+        if (result.sources && result.sources.length > 0) {
+            let sourcesHtml = '';
+            result.sources.forEach(source => {
+                sourcesHtml += `
+                    <div class="text-sm text-gray-500">
+                        <i class="fas fa-file-alt mr-1"></i>
+                        ${source.filename} (${source.subject}) - ${Math.round(source.relevance * 100)}% relevant
+                    </div>
+                `;
+            });
+            sourcesList.innerHTML = sourcesHtml;
+            sourcesSection.classList.remove('hidden');
+        } else {
+            sourcesSection.classList.add('hidden');
+        }
+        
+        section.classList.remove('hidden');
+    }
+    
+    function displayExplanation(result) {
+        const section = document.getElementById('answerSection');
+        const content = document.getElementById('answerContent');
+        
+        document.getElementById('quizSection').classList.add('hidden');
+        document.getElementById('sourcesSection').classList.add('hidden');
+        
+        if (!result || !result.success) {
+            content.innerHTML = `<p class="text-red-500">Error: ${result?.error || 'Failed to get explanation'}</p>`;
+            section.classList.remove('hidden');
+            return;
+        }
+        
+        content.innerHTML = `
+            <div class="mb-2">
+                ${result.used_notes ? '<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Based on your notes</span>' : 
+                                      '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">General knowledge</span>'}
+            </div>
+            <p class="whitespace-pre-wrap">${result.explanation}</p>
+        `;
+        
+        section.classList.remove('hidden');
+    }
+    
+    function displayQuiz(result) {
+        const section = document.getElementById('quizSection');
+        const content = document.getElementById('quizContent');
+        
+        document.getElementById('answerSection').classList.add('hidden');
+        
+        if (!result || !result.success || !result.questions) {
+            content.innerHTML = `<p class="text-red-500">Error: ${result?.error || 'Failed to generate quiz'}</p>`;
+            section.classList.remove('hidden');
+            return;
+        }
+        
+        let html = '';
+        result.questions.forEach((q, i) => {
+            html += `
+                <div class="bg-gray-50 p-4 rounded-lg" id="q${i}">
+                    <p class="font-semibold mb-3">${i + 1}. ${q.question}</p>
+                    <div class="space-y-2">
+            `;
+            
+            q.options.forEach((opt, j) => {
+                const optLetter = String.fromCharCode(65 + j);
+                html += `
+                    <button onclick="checkAnswer(${i}, '${optLetter}', '${q.correct_answer}')"
+                            class="w-full text-left px-4 py-2 border rounded hover:bg-purple-50 transition option-${i}">
+                        ${optLetter}. ${opt}
+                    </button>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    <div id="explanation${i}" class="hidden mt-3 p-3 bg-blue-50 rounded text-sm">
+                        <strong>Explanation:</strong> ${q.explanation}
+                    </div>
+                </div>
+            `;
+        });
+        
+        content.innerHTML = html;
+        section.classList.remove('hidden');
+    }
+    
+    function checkAnswer(qIndex, selected, correct) {
+        const buttons = document.querySelectorAll(`.option-${qIndex}`);
+        buttons.forEach(btn => {
+            btn.disabled = true;
+            const letter = btn.textContent.trim()[0];
+            if (letter === correct) {
+                btn.classList.add('bg-green-100', 'border-green-500');
+            } else if (letter === selected && selected !== correct) {
+                btn.classList.add('bg-red-100', 'border-red-500');
+            }
+        });
+        document.getElementById(`explanation${qIndex}`).classList.remove('hidden');
+    }
+    
+    // Enter key to submit
+    document.getElementById('questionInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            submitQuestion();
+        }
+    });
+    
+    // Load data on page load
+    loadDocuments();
+    loadStats();
+</script>
+{% endblock %}
