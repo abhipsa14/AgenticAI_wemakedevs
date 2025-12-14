@@ -109,7 +109,7 @@ async def list_documents(db: Session = Depends(get_session)):
                 "filename": d.filename,
                 "subject": d.subject,
                 "uploaded_at": d.uploaded_at.isoformat(),
-                "chunks": d.total_chunks
+                "chunks": d.chunk_count
             }
             for d in docs
         ]

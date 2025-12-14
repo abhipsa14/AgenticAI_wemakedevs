@@ -17,7 +17,7 @@ class LLMService:
                 api_key=GROQ_API_KEY,
                 base_url="https://api.groq.com/openai/v1"
             )
-            self.default_model = "llama-3.1-70b-versatile"
+            self.default_model = "llama-3.3-70b-versatile"  # Updated from deprecated model
         else:
             self.client = OpenAI(api_key=OPENAI_API_KEY)
             self.default_model = DEFAULT_LLM_MODEL

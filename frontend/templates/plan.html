@@ -6,11 +6,86 @@
 <div class="max-w-4xl mx-auto">
     <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-gray-800 mb-2">Create Your Study Plan</h1>
-        <p class="text-gray-600">Tell me about your subjects and I'll create a personalized study schedule</p>
+        <p class="text-gray-600">Tell me about your grade and subjects, I'll create a personalized study schedule</p>
     </div>
 
     <div class="bg-white rounded-xl shadow-md p-8">
         <form id="planForm" onsubmit="createPlan(event)">
+            <!-- Student Profile Section -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-user-graduate mr-2 text-purple-600"></i>
+                    Student Profile
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">School Standard / Grade</label>
+                        <select id="schoolStandard" onchange="updateSubjectsForGrade()" 
+                                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">Select your grade...</option>
+                            <optgroup label="Primary School">
+                                <option value="1">Grade 1</option>
+                                <option value="2">Grade 2</option>
+                                <option value="3">Grade 3</option>
+                                <option value="4">Grade 4</option>
+                                <option value="5">Grade 5</option>
+                            </optgroup>
+                            <optgroup label="Middle School">
+                                <option value="6">Grade 6</option>
+                                <option value="7">Grade 7</option>
+                                <option value="8">Grade 8</option>
+                            </optgroup>
+                            <optgroup label="High School">
+                                <option value="9">Grade 9</option>
+                                <option value="10">Grade 10 (Board Exam)</option>
+                            </optgroup>
+                            <optgroup label="Senior Secondary">
+                                <option value="11-science">Grade 11 - Science</option>
+                                <option value="11-commerce">Grade 11 - Commerce</option>
+                                <option value="11-arts">Grade 11 - Arts</option>
+                                <option value="12-science">Grade 12 - Science (Board Exam)</option>
+                                <option value="12-commerce">Grade 12 - Commerce (Board Exam)</option>
+                                <option value="12-arts">Grade 12 - Arts (Board Exam)</option>
+                            </optgroup>
+                            <optgroup label="Competitive Exams">
+                                <option value="jee">JEE Preparation</option>
+                                <option value="neet">NEET Preparation</option>
+                                <option value="cuet">CUET Preparation</option>
+                            </optgroup>
+                            <optgroup label="Higher Education">
+                                <option value="college">College / University</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Board / Curriculum</label>
+                        <select id="boardType" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="cbse">CBSE</option>
+                            <option value="icse">ICSE</option>
+                            <option value="state">State Board</option>
+                            <option value="ib">IB (International Baccalaureate)</option>
+                            <option value="igcse">IGCSE / Cambridge</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommended Subjects (based on grade) -->
+            <div id="recommendedSubjects" class="mb-8 hidden">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-star mr-2 text-yellow-500"></i>
+                    Recommended Subjects for Your Grade
+                </h3>
+                <div id="subjectCheckboxes" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <!-- Populated dynamically -->
+                </div>
+                <button type="button" onclick="addSelectedSubjects()" 
+                        class="mt-4 bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200 transition">
+                    <i class="fas fa-plus mr-2"></i>Add Selected Subjects
+                </button>
+            </div>
+
             <!-- Subjects Section -->
             <div class="mb-8">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">
@@ -18,34 +93,11 @@
                     Subjects to Study
                 </h3>
                 <div id="subjectsList" class="space-y-4">
-                    <div class="subject-item flex gap-4 items-start p-4 bg-gray-50 rounded-lg">
-                        <div class="flex-1">
-                            <label class="block text-sm text-gray-600 mb-1">Subject Name</label>
-                            <input type="text" name="subject_name" required
-                                   class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                   placeholder="e.g., Mathematics">
-                        </div>
-                        <div class="w-32">
-                            <label class="block text-sm text-gray-600 mb-1">Priority</label>
-                            <select name="subject_priority" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                <option value="1">High</option>
-                                <option value="2" selected>Medium</option>
-                                <option value="3">Low</option>
-                            </select>
-                        </div>
-                        <div class="w-40">
-                            <label class="block text-sm text-gray-600 mb-1">Exam Date (optional)</label>
-                            <input type="date" name="subject_exam"
-                                   class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        </div>
-                        <button type="button" onclick="removeSubject(this)" class="mt-6 text-red-500 hover:text-red-700">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
+                    <!-- Subjects will be added here -->
                 </div>
-                <button type="button" onclick="addSubject()" 
+                <button type="button" onclick="addSubjectManually()" 
                         class="mt-4 text-purple-600 hover:text-purple-800 flex items-center gap-2">
-                    <i class="fas fa-plus-circle"></i> Add Another Subject
+                    <i class="fas fa-plus-circle"></i> Add Subject Manually
                 </button>
             </div>
 
@@ -105,50 +157,416 @@
     // Set default start date to today
     document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
     
-    function addSubject() {
+    // Grade-wise subject configuration with topics
+    const gradeSubjects = {
+        // Primary School (1-5)
+        '1': {
+            subjects: ['English', 'Mathematics', 'EVS (Environmental Studies)', 'Hindi'],
+            topics: {
+                'English': ['Alphabets & Phonics', 'Simple Words', 'Reading', 'Writing Practice'],
+                'Mathematics': ['Numbers 1-100', 'Addition', 'Subtraction', 'Shapes'],
+                'EVS (Environmental Studies)': ['My Family', 'Plants', 'Animals', 'My School'],
+                'Hindi': ['वर्णमाला', 'मात्राएं', 'शब्द पहचान', 'लिखना']
+            }
+        },
+        '2': {
+            subjects: ['English', 'Mathematics', 'EVS', 'Hindi'],
+            topics: {
+                'English': ['Reading Comprehension', 'Grammar Basics', 'Story Writing', 'Vocabulary'],
+                'Mathematics': ['Addition & Subtraction', 'Multiplication Intro', 'Time', 'Money'],
+                'EVS': ['Our Body', 'Food', 'Water', 'Houses'],
+                'Hindi': ['कहानी पठन', 'व्याकरण', 'निबंध', 'पत्र लेखन']
+            }
+        },
+        '3': {
+            subjects: ['English', 'Mathematics', 'EVS', 'Hindi', 'Computer'],
+            topics: {
+                'English': ['Grammar', 'Comprehension', 'Essay Writing', 'Poetry'],
+                'Mathematics': ['Multiplication', 'Division', 'Fractions Intro', 'Geometry Basics'],
+                'EVS': ['Air & Water', 'Plants & Animals', 'Transport', 'Our Helpers'],
+                'Hindi': ['व्याकरण', 'अपठित गद्यांश', 'निबंध लेखन', 'कविता'],
+                'Computer': ['Computer Basics', 'Parts of Computer', 'MS Paint', 'Typing']
+            }
+        },
+        '4': {
+            subjects: ['English', 'Mathematics', 'EVS', 'Hindi', 'Computer'],
+            topics: {
+                'English': ['Tenses', 'Comprehension', 'Letter Writing', 'Grammar'],
+                'Mathematics': ['Fractions', 'Decimals Intro', 'Geometry', 'Data Handling'],
+                'EVS': ['Food & Digestion', 'Teeth & Microbes', 'Reaching Grandmother House', 'Water'],
+                'Hindi': ['व्याकरण', 'पत्र लेखन', 'अनुच्छेद', 'कहानी'],
+                'Computer': ['MS Word Basics', 'Internet Basics', 'File Management', 'Typing']
+            }
+        },
+        '5': {
+            subjects: ['English', 'Mathematics', 'EVS', 'Hindi', 'Computer'],
+            topics: {
+                'English': ['Grammar & Composition', 'Comprehension', 'Creative Writing', 'Literature'],
+                'Mathematics': ['Large Numbers', 'Fractions & Decimals', 'Geometry', 'Mensuration'],
+                'EVS': ['Super Senses', 'Experiments with Water', 'Seeds & Seeds', 'Across the Wall'],
+                'Hindi': ['व्याकरण', 'निबंध', 'पत्र लेखन', 'कविता व कहानी'],
+                'Computer': ['MS Word', 'MS PowerPoint', 'Internet', 'Scratch Basics']
+            }
+        },
+        // Middle School (6-8)
+        '6': {
+            subjects: ['Mathematics', 'Science', 'Social Science', 'English', 'Hindi', 'Sanskrit'],
+            topics: {
+                'Mathematics': ['Number System', 'Algebra Intro', 'Ratio & Proportion', 'Geometry', 'Mensuration'],
+                'Science': ['Food', 'Materials', 'Living World', 'Motion & Measurement', 'Electricity'],
+                'Social Science': ['History - Early Humans', 'Geography - Earth', 'Civics - Government', 'Economics Intro'],
+                'English': ['Grammar', 'Literature', 'Writing Skills', 'Comprehension'],
+                'Hindi': ['व्याकरण', 'साहित्य', 'लेखन कौशल', 'अपठित गद्यांश'],
+                'Sanskrit': ['शब्द रूप', 'धातु रूप', 'संधि', 'श्लोक']
+            }
+        },
+        '7': {
+            subjects: ['Mathematics', 'Science', 'Social Science', 'English', 'Hindi', 'Sanskrit'],
+            topics: {
+                'Mathematics': ['Integers', 'Fractions & Decimals', 'Algebraic Expressions', 'Geometry', 'Data Handling'],
+                'Science': ['Nutrition', 'Acids & Bases', 'Heat', 'Motion & Time', 'Electric Current'],
+                'Social Science': ['Medieval History', 'Environment', 'Democracy', 'Markets'],
+                'English': ['Grammar', 'Literature', 'Writing', 'Comprehension'],
+                'Hindi': ['व्याकरण', 'पाठ्यपुस्तक', 'रचनात्मक लेखन', 'अपठित'],
+                'Sanskrit': ['व्याकरण', 'पाठ', 'अनुवाद', 'निबंध']
+            }
+        },
+        '8': {
+            subjects: ['Mathematics', 'Science', 'Social Science', 'English', 'Hindi', 'Sanskrit'],
+            topics: {
+                'Mathematics': ['Rational Numbers', 'Linear Equations', 'Quadrilaterals', 'Mensuration', 'Exponents'],
+                'Science': ['Crop Production', 'Microorganisms', 'Metals & Non-metals', 'Force & Pressure', 'Sound'],
+                'Social Science': ['Modern History', 'Resources', 'Constitution', 'Industries'],
+                'English': ['Grammar', 'Literature', 'Writing Skills', 'Comprehension'],
+                'Hindi': ['व्याकरण', 'साहित्य', 'लेखन', 'अपठित'],
+                'Sanskrit': ['व्याकरण', 'पाठ', 'रचना', 'अनुवाद']
+            }
+        },
+        // High School (9-10)
+        '9': {
+            subjects: ['Mathematics', 'Science', 'Social Science', 'English', 'Hindi/Second Language'],
+            topics: {
+                'Mathematics': ['Number Systems', 'Polynomials', 'Coordinate Geometry', 'Linear Equations', 'Triangles', 'Statistics'],
+                'Science': ['Matter', 'Atom & Molecules', 'Cell', 'Tissues', 'Motion', 'Force', 'Work & Energy'],
+                'Social Science': ['French Revolution', 'India - Size & Location', 'Constitutional Design', 'Poverty'],
+                'English': ['Grammar', 'Literature - Beehive', 'Writing Skills', 'Moments'],
+                'Hindi/Second Language': ['व्याकरण', 'क्षितिज', 'कृतिका', 'लेखन']
+            }
+        },
+        '10': {
+            subjects: ['Mathematics', 'Science', 'Social Science', 'English', 'Hindi/Second Language'],
+            topics: {
+                'Mathematics': ['Real Numbers', 'Polynomials', 'Linear Equations', 'Quadratic Equations', 'Triangles', 'Coordinate Geometry', 'Trigonometry', 'Statistics', 'Probability'],
+                'Science': ['Chemical Reactions', 'Acids, Bases & Salts', 'Metals & Non-metals', 'Life Processes', 'Control & Coordination', 'Electricity', 'Light', 'Heredity'],
+                'Social Science': ['Rise of Nationalism', 'Resources & Development', 'Power Sharing', 'Development', 'Globalization'],
+                'English': ['Grammar', 'First Flight', 'Writing Skills', 'Footprints'],
+                'Hindi/Second Language': ['व्याकरण', 'क्षितिज', 'कृतिका', 'लेखन कार्य']
+            }
+        },
+        // Grade 11 - Science
+        '11-science': {
+            subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology', 'English', 'Computer Science/IP'],
+            topics: {
+                'Physics': ['Units & Measurements', 'Motion in Straight Line', 'Laws of Motion', 'Work & Energy', 'Rotational Motion', 'Gravitation', 'Thermodynamics', 'Oscillations', 'Waves'],
+                'Chemistry': ['Basic Concepts', 'Atomic Structure', 'Periodic Table', 'Chemical Bonding', 'States of Matter', 'Thermodynamics', 'Equilibrium', 'Organic Chemistry Basics'],
+                'Mathematics': ['Sets', 'Relations & Functions', 'Trigonometry', 'Complex Numbers', 'Linear Inequalities', 'Permutations', 'Binomial Theorem', 'Sequences', 'Straight Lines', 'Conic Sections', 'Calculus Intro', 'Statistics', 'Probability'],
+                'Biology': ['Living World', 'Biological Classification', 'Plant Kingdom', 'Animal Kingdom', 'Morphology', 'Anatomy', 'Cell', 'Biomolecules', 'Cell Cycle'],
+                'English': ['Reading Comprehension', 'Writing Skills', 'Literature', 'Grammar'],
+                'Computer Science/IP': ['Computer Fundamentals', 'Python Basics', 'Data Handling', 'SQL Basics']
+            }
+        },
+        // Grade 11 - Commerce
+        '11-commerce': {
+            subjects: ['Accountancy', 'Business Studies', 'Economics', 'Mathematics/IP', 'English'],
+            topics: {
+                'Accountancy': ['Introduction to Accounting', 'Theory Base', 'Recording Transactions', 'Ledger', 'Trial Balance', 'Bank Reconciliation', 'Depreciation', 'Financial Statements'],
+                'Business Studies': ['Nature of Business', 'Business Environment', 'Private & Public Sector', 'Business Services', 'Social Responsibility', 'International Business'],
+                'Economics': ['Introduction to Economics', 'Collection of Data', 'Organization of Data', 'Central Tendency', 'Correlation', 'Index Numbers', 'Indian Economy'],
+                'Mathematics/IP': ['Sets', 'Relations', 'Trigonometry', 'Statistics', 'Probability'],
+                'English': ['Reading', 'Writing', 'Literature', 'Grammar']
+            }
+        },
+        // Grade 11 - Arts
+        '11-arts': {
+            subjects: ['History', 'Political Science', 'Geography', 'Economics', 'English', 'Psychology/Sociology'],
+            topics: {
+                'History': ['Early Societies', 'Empires', 'Changing Traditions', 'Cultures', 'Displacing Indigenous Peoples'],
+                'Political Science': ['Constitution', 'Rights', 'Legislature', 'Executive', 'Judiciary', 'Federalism', 'Local Government'],
+                'Geography': ['Geography as Discipline', 'Earth', 'Landforms', 'Climate', 'Water', 'Life on Earth', 'India - Physical', 'Climate', 'Natural Vegetation'],
+                'Economics': ['Statistics', 'Indian Economy', 'Economic Reforms', 'Poverty', 'Human Capital'],
+                'English': ['Reading', 'Writing', 'Literature', 'Grammar'],
+                'Psychology/Sociology': ['Introduction', 'Methods', 'Human Development', 'Sensory Processes', 'Learning']
+            }
+        },
+        // Grade 12 - Science
+        '12-science': {
+            subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology', 'English', 'Computer Science/IP'],
+            topics: {
+                'Physics': ['Electric Charges', 'Electrostatic Potential', 'Current Electricity', 'Magnetism', 'EMI', 'AC', 'EM Waves', 'Ray Optics', 'Wave Optics', 'Dual Nature', 'Atoms', 'Nuclei', 'Semiconductors'],
+                'Chemistry': ['Solid State', 'Solutions', 'Electrochemistry', 'Chemical Kinetics', 'Surface Chemistry', 'p-Block', 'd-Block', 'Coordination Compounds', 'Haloalkanes', 'Alcohols', 'Aldehydes', 'Amines', 'Biomolecules'],
+                'Mathematics': ['Relations & Functions', 'Inverse Trigonometry', 'Matrices', 'Determinants', 'Continuity', 'Differentiation', 'Applications of Derivatives', 'Integrals', 'Applications of Integrals', 'Differential Equations', 'Vectors', '3D Geometry', 'Linear Programming', 'Probability'],
+                'Biology': ['Reproduction', 'Genetics', 'Molecular Basis of Inheritance', 'Evolution', 'Human Health', 'Biotechnology', 'Organisms & Environment', 'Ecosystem', 'Biodiversity'],
+                'English': ['Reading', 'Writing', 'Flamingo', 'Vistas'],
+                'Computer Science/IP': ['Python Advanced', 'Data Structures', 'DBMS', 'SQL', 'Computer Networks']
+            }
+        },
+        // Grade 12 - Commerce
+        '12-commerce': {
+            subjects: ['Accountancy', 'Business Studies', 'Economics', 'Mathematics/IP', 'English'],
+            topics: {
+                'Accountancy': ['Partnership', 'Goodwill', 'Admission', 'Retirement', 'Death', 'Company Accounts', 'Financial Statements', 'Cash Flow'],
+                'Business Studies': ['Management', 'Principles', 'Business Environment', 'Planning', 'Organizing', 'Staffing', 'Directing', 'Controlling', 'Financial Management', 'Marketing'],
+                'Economics': ['National Income', 'Money & Banking', 'AD & AS', 'Budget', 'Balance of Payments', 'Development Experience'],
+                'Mathematics/IP': ['Relations', 'Functions', 'Calculus', 'Linear Programming', 'Probability'],
+                'English': ['Reading', 'Writing', 'Flamingo', 'Vistas']
+            }
+        },
+        // Grade 12 - Arts
+        '12-arts': {
+            subjects: ['History', 'Political Science', 'Geography', 'Economics', 'English', 'Psychology/Sociology'],
+            topics: {
+                'History': ['Bricks & Beads', 'Kings & Chronicles', 'Bhakti-Sufi', 'Mughal Court', 'Colonial Cities', 'Mahatma Gandhi', 'Partition'],
+                'Political Science': ['Cold War', 'End of Bipolarity', 'US Hegemony', 'Globalisation', 'Nation Building', 'Politics of Planned Development', 'India-China', 'India-Pakistan'],
+                'Geography': ['Human Geography', 'Population', 'Migration', 'Human Development', 'Primary Activities', 'Secondary Activities', 'Transport', 'International Trade'],
+                'Economics': ['National Income', 'Money & Banking', 'Government Budget', 'Balance of Payments'],
+                'English': ['Reading', 'Writing', 'Flamingo', 'Vistas'],
+                'Psychology/Sociology': ['Intelligence', 'Self & Personality', 'Stress', 'Psychological Disorders', 'Therapy', 'Attitude', 'Social Cognition']
+            }
+        },
+        // JEE Preparation
+        'jee': {
+            subjects: ['Physics', 'Chemistry', 'Mathematics'],
+            topics: {
+                'Physics': ['Mechanics', 'Thermodynamics', 'Waves & Oscillations', 'Electrostatics', 'Current Electricity', 'Magnetism', 'Optics', 'Modern Physics', 'Semiconductors'],
+                'Chemistry': ['Physical Chemistry - Mole Concept, Atomic Structure, Thermodynamics, Equilibrium, Electrochemistry, Kinetics', 'Inorganic Chemistry - Periodic Table, Chemical Bonding, Coordination, Metallurgy', 'Organic Chemistry - GOC, Hydrocarbons, Reactions, Biomolecules'],
+                'Mathematics': ['Algebra - Complex Numbers, Quadratic, P&C, Binomial, Sequences', 'Calculus - Limits, Derivatives, Integration, Differential Equations', 'Coordinate Geometry - Straight Lines, Circles, Conics', 'Trigonometry', 'Vectors & 3D', 'Probability']
+            }
+        },
+        // NEET Preparation
+        'neet': {
+            subjects: ['Physics', 'Chemistry', 'Biology'],
+            topics: {
+                'Physics': ['Mechanics', 'Heat & Thermodynamics', 'Oscillations & Waves', 'Electrostatics', 'Current Electricity', 'Optics', 'Modern Physics'],
+                'Chemistry': ['Physical Chemistry', 'Inorganic Chemistry', 'Organic Chemistry'],
+                'Biology': ['Botany - Cell, Plant Physiology, Genetics, Ecology', 'Zoology - Human Physiology, Animal Kingdom, Reproduction, Evolution, Human Health']
+            }
+        },
+        // CUET Preparation
+        'cuet': {
+            subjects: ['English', 'General Test', 'Domain Subject 1', 'Domain Subject 2'],
+            topics: {
+                'English': ['Reading Comprehension', 'Verbal Ability', 'Vocabulary', 'Grammar'],
+                'General Test': ['General Knowledge', 'Current Affairs', 'Logical Reasoning', 'Quantitative Aptitude'],
+                'Domain Subject 1': ['Based on your preferred course'],
+                'Domain Subject 2': ['Based on your preferred course']
+            }
+        },
+        // College
+        'college': {
+            subjects: ['Subject 1', 'Subject 2', 'Subject 3'],
+            topics: {
+                'Subject 1': ['Add your topics'],
+                'Subject 2': ['Add your topics'],
+                'Subject 3': ['Add your topics']
+            }
+        }
+    };
+
+    function updateSubjectsForGrade() {
+        const grade = document.getElementById('schoolStandard').value;
+        const recommendedSection = document.getElementById('recommendedSubjects');
+        const checkboxContainer = document.getElementById('subjectCheckboxes');
+        
+        if (!grade || !gradeSubjects[grade]) {
+            recommendedSection.classList.add('hidden');
+            return;
+        }
+        
+        const subjects = gradeSubjects[grade].subjects;
+        checkboxContainer.innerHTML = subjects.map(subject => `
+            <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+                <input type="checkbox" value="${subject}" class="subject-checkbox w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                <span class="text-gray-700">${subject}</span>
+            </label>
+        `).join('');
+        
+        recommendedSection.classList.remove('hidden');
+    }
+    
+    function addSelectedSubjects() {
+        const grade = document.getElementById('schoolStandard').value;
+        const checkboxes = document.querySelectorAll('.subject-checkbox:checked');
+        
+        checkboxes.forEach(cb => {
+            addSubjectWithTopics(cb.value, grade);
+            cb.checked = false;
+        });
+    }
+    
+    function addSubjectWithTopics(subjectName, grade) {
         const container = document.getElementById('subjectsList');
+        const topics = gradeSubjects[grade]?.topics[subjectName] || [];
+        const subjectId = 'subject_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
         const newItem = document.createElement('div');
-        newItem.className = 'subject-item flex gap-4 items-start p-4 bg-gray-50 rounded-lg';
+        newItem.className = 'subject-item p-4 bg-gray-50 rounded-lg border-l-4 border-purple-500';
         newItem.innerHTML = `
-            <div class="flex-1">
-                <label class="block text-sm text-gray-600 mb-1">Subject Name</label>
-                <input type="text" name="subject_name" required
-                       class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                       placeholder="e.g., Physics">
+            <div class="flex gap-4 items-start mb-3">
+                <div class="flex-1">
+                    <label class="block text-sm text-gray-600 mb-1">Subject Name</label>
+                    <input type="text" name="subject_name" required value="${subjectName}"
+                           class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="w-32">
+                    <label class="block text-sm text-gray-600 mb-1">Priority</label>
+                    <select name="subject_priority" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="1">High</option>
+                        <option value="2" selected>Medium</option>
+                        <option value="3">Low</option>
+                    </select>
+                </div>
+                <div class="w-40">
+                    <label class="block text-sm text-gray-600 mb-1">Exam Date</label>
+                    <input type="date" name="subject_exam"
+                           class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <button type="button" onclick="removeSubject(this)" class="mt-6 text-red-500 hover:text-red-700">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
-            <div class="w-32">
-                <label class="block text-sm text-gray-600 mb-1">Priority</label>
-                <select name="subject_priority" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <option value="1">High</option>
-                    <option value="2" selected>Medium</option>
-                    <option value="3">Low</option>
-                </select>
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-sm font-medium text-gray-700">
+                        <i class="fas fa-list-ul mr-1 text-purple-500"></i> Topics to Cover
+                    </label>
+                    <button type="button" onclick="toggleTopics('${subjectId}')" class="text-xs text-purple-600 hover:text-purple-800">
+                        <i class="fas fa-chevron-down" id="toggle_${subjectId}"></i> Show/Hide
+                    </button>
+                </div>
+                <div id="topics_${subjectId}" class="topics-container grid grid-cols-2 gap-2">
+                    ${topics.map(topic => `
+                        <label class="flex items-center gap-2 text-sm p-2 bg-white rounded border hover:bg-purple-50 cursor-pointer">
+                            <input type="checkbox" name="topic_${subjectId}" value="${topic}" checked 
+                                   class="w-3 h-3 text-purple-600 rounded focus:ring-purple-500">
+                            <span class="text-gray-600">${topic}</span>
+                        </label>
+                    `).join('')}
+                </div>
+                <div class="mt-2 flex gap-2">
+                    <input type="text" id="newTopic_${subjectId}" placeholder="Add custom topic..."
+                           class="flex-1 text-sm border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-purple-500">
+                    <button type="button" onclick="addCustomTopic('${subjectId}')" 
+                            class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
             </div>
-            <div class="w-40">
-                <label class="block text-sm text-gray-600 mb-1">Exam Date (optional)</label>
-                <input type="date" name="subject_exam"
-                       class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
-            </div>
-            <button type="button" onclick="removeSubject(this)" class="mt-6 text-red-500 hover:text-red-700">
-                <i class="fas fa-trash"></i>
-            </button>
         `;
         container.appendChild(newItem);
     }
     
+    function addSubjectManually() {
+        const container = document.getElementById('subjectsList');
+        const subjectId = 'subject_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        const newItem = document.createElement('div');
+        newItem.className = 'subject-item p-4 bg-gray-50 rounded-lg border-l-4 border-gray-300';
+        newItem.innerHTML = `
+            <div class="flex gap-4 items-start mb-3">
+                <div class="flex-1">
+                    <label class="block text-sm text-gray-600 mb-1">Subject Name</label>
+                    <input type="text" name="subject_name" required
+                           class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                           placeholder="e.g., Mathematics">
+                </div>
+                <div class="w-32">
+                    <label class="block text-sm text-gray-600 mb-1">Priority</label>
+                    <select name="subject_priority" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="1">High</option>
+                        <option value="2" selected>Medium</option>
+                        <option value="3">Low</option>
+                    </select>
+                </div>
+                <div class="w-40">
+                    <label class="block text-sm text-gray-600 mb-1">Exam Date</label>
+                    <input type="date" name="subject_exam"
+                           class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <button type="button" onclick="removeSubject(this)" class="mt-6 text-red-500 hover:text-red-700">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-sm font-medium text-gray-700">
+                        <i class="fas fa-list-ul mr-1 text-purple-500"></i> Topics to Cover
+                    </label>
+                </div>
+                <div id="topics_${subjectId}" class="topics-container grid grid-cols-2 gap-2">
+                    <!-- Custom topics will be added here -->
+                </div>
+                <div class="mt-2 flex gap-2">
+                    <input type="text" id="newTopic_${subjectId}" placeholder="Add a topic..."
+                           class="flex-1 text-sm border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-purple-500">
+                    <button type="button" onclick="addCustomTopic('${subjectId}')" 
+                            class="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded hover:bg-purple-200">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        container.appendChild(newItem);
+    }
+    
+    function toggleTopics(subjectId) {
+        const container = document.getElementById('topics_' + subjectId);
+        const icon = document.getElementById('toggle_' + subjectId);
+        
+        if (container.style.display === 'none') {
+            container.style.display = 'grid';
+            icon.className = 'fas fa-chevron-down';
+        } else {
+            container.style.display = 'none';
+            icon.className = 'fas fa-chevron-right';
+        }
+    }
+    
+    function addCustomTopic(subjectId) {
+        const input = document.getElementById('newTopic_' + subjectId);
+        const topic = input.value.trim();
+        if (!topic) return;
+        
+        const container = document.getElementById('topics_' + subjectId);
+        const label = document.createElement('label');
+        label.className = 'flex items-center gap-2 text-sm p-2 bg-white rounded border hover:bg-purple-50 cursor-pointer';
+        label.innerHTML = `
+            <input type="checkbox" name="topic_${subjectId}" value="${topic}" checked 
+                   class="w-3 h-3 text-purple-600 rounded focus:ring-purple-500">
+            <span class="text-gray-600">${topic}</span>
+        `;
+        container.appendChild(label);
+        input.value = '';
+    }
+    
+    function addSubject() {
+        addSubjectManually();
+    }
+    
     function removeSubject(btn) {
         const items = document.querySelectorAll('.subject-item');
-        if (items.length > 1) {
+        if (items.length > 0) {
             btn.closest('.subject-item').remove();
-        } else {
-            alert('You need at least one subject!');
         }
     }
     
     async function createPlan(event) {
         event.preventDefault();
         
-        // Collect subjects
+        // Collect student profile
+        const grade = document.getElementById('schoolStandard').value;
+        const board = document.getElementById('boardType').value;
+        
+        // Collect subjects with topics
         const subjects = [];
         const items = document.querySelectorAll('.subject-item');
         items.forEach(item => {
@@ -156,11 +574,16 @@
             const priority = parseInt(item.querySelector('[name="subject_priority"]').value);
             const examDate = item.querySelector('[name="subject_exam"]').value;
             
+            // Get selected topics
+            const topicCheckboxes = item.querySelectorAll('input[type="checkbox"][name^="topic_"]:checked');
+            const topics = Array.from(topicCheckboxes).map(cb => cb.value);
+            
             if (name) {
                 subjects.push({
                     name,
                     priority,
-                    exam_date: examDate || null
+                    exam_date: examDate || null,
+                    topics: topics
                 });
             }
         });
@@ -171,6 +594,8 @@
         }
         
         const requestData = {
+            grade: grade,
+            board: board,
             subjects,
             hours_per_day: parseFloat(document.getElementById('hoursPerDay').value),
             goals: document.getElementById('studyGoals').value || null,
@@ -191,14 +616,34 @@
         const planContent = document.getElementById('planContent');
         
         const plan = result.plan_data;
+        const grade = document.getElementById('schoolStandard');
+        const gradeText = grade.options[grade.selectedIndex]?.text || 'Not specified';
+        const board = document.getElementById('boardType');
+        const boardText = board.options[board.selectedIndex]?.text || 'Not specified';
         
         let html = `
-            <div class="mb-6">
+            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="flex items-center gap-3">
+                    <div class="bg-green-100 p-2 rounded-full">
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-green-800">Plan Created Successfully!</h3>
+                        <p class="text-green-700 text-sm">Your study tasks have been added to Today's Tasks for the next 4 weeks.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-6 p-4 bg-purple-50 rounded-lg">
                 <h3 class="font-semibold text-lg text-gray-700 mb-3">
-                    <i class="fas fa-info-circle mr-2 text-blue-500"></i>
-                    Plan Overview
+                    <i class="fas fa-user-graduate mr-2 text-purple-500"></i>
+                    Student Profile
                 </h3>
-                <p class="text-gray-600">Daily study hours: ${plan.daily_study_hours || 4} hours</p>
+                <div class="grid grid-cols-2 gap-4 text-gray-600">
+                    <p><strong>Grade:</strong> ${gradeText}</p>
+                    <p><strong>Board:</strong> ${boardText}</p>
+                    <p><strong>Daily Study Hours:</strong> ${plan.daily_study_hours || 4} hours</p>
+                </div>
             </div>
         `;
         

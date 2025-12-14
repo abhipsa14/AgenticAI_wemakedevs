@@ -85,7 +85,7 @@ async def get_todays_tasks(
         "day": day_name.capitalize(),
         "tasks": tasks,
         "total_hours": sum(t['duration_hours'] for t in tasks),
-        "plan_name": plan.name
+        "plan_name": plan.title
     }
 
 
@@ -213,7 +213,7 @@ async def get_weekly_schedule(
     
     return {
         "week_start": start.strftime("%Y-%m-%d"),
-        "plan_name": plan.name,
+        "plan_name": plan.title,
         "days": week_data
     }
 

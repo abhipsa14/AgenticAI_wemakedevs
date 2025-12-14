@@ -61,7 +61,7 @@ pip install -r requirements.txt
 
 ```bash
 # Copy example env file
-copy .env.example .env
+copy .env
 
 # Edit .env and add your OpenAI API key
 # OPENAI_API_KEY=your_key_here
@@ -208,10 +208,6 @@ AgenticAI_wemakedevs/
 Edit `.env` file:
 
 ```env
-# Required: OpenAI API key for LLM
-OPENAI_API_KEY=sk-...
-
-# Optional: Use Groq instead (free tier available)
 GROQ_API_KEY=gsk_...
 
 # Database (SQLite by default)

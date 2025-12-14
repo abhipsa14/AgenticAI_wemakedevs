@@ -1,1 +1,3 @@
 .venv/
+# Environment variables
+.env 

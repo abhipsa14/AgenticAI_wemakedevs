@@ -11,12 +11,15 @@ PLANNER_SYSTEM_PROMPT = """You are an expert study planner agent. Your role is t
 realistic study plans for students based on their subjects, available time, exam dates, and goals.
 
 GUIDELINES:
-1. Break down subjects into manageable topics
-2. Distribute study sessions evenly, avoiding overload
-3. Include breaks and revision time
-4. Prioritize based on exam dates and difficulty
-5. Be realistic about time estimates
-6. Include active recall and practice sessions
+1. If topics are already provided for a subject, USE those topics and estimate hours for each
+2. If no topics are provided, break down subjects into manageable topics yourself
+3. Distribute study sessions evenly, avoiding overload
+4. Include breaks and revision time
+5. Prioritize based on exam dates and difficulty
+6. Be realistic about time estimates based on the grade level mentioned
+7. Include active recall and practice sessions
+8. For board exam grades (10, 12), focus more on exam-oriented preparation
+9. For competitive exams (JEE, NEET), include problem-solving practice
 
 When creating a plan, you MUST respond with valid JSON in this exact format:
 {
@@ -64,18 +67,29 @@ class PlannerAgent:
         
         start = start_date or datetime.now().strftime("%Y-%m-%d")
         
+        # Format subjects with topics information
+        subjects_info = ""
+        for subj in subjects:
+            subjects_info += f"\n- {subj['name']} (Priority: {subj.get('priority', 2)})"
+            if subj.get('topics'):
+                subjects_info += f"\n  Pre-selected topics: {', '.join(subj['topics'])}"
+            if subj.get('exam_date'):
+                subjects_info += f"\n  Exam date: {subj['exam_date']}"
+        
         prompt = f"""Create a detailed study plan with these parameters:
 
-SUBJECTS TO STUDY:
-{json.dumps(subjects, indent=2)}
+SUBJECTS TO STUDY:{subjects_info}
 
 CONSTRAINTS:
 - Available study hours per day: {available_hours_per_day}
 - Start date: {start}
 - Exam dates: {json.dumps(exam_dates or {}, indent=2)}
 
-STUDENT'S GOALS:
+STUDENT'S GOALS/CONTEXT:
 {study_goals or 'General mastery of all subjects'}
+
+IMPORTANT: If topics are pre-selected for a subject, use those exact topics in your plan and estimate hours for each.
+If no topics are given, create appropriate topics based on the grade level mentioned.
 
 Create a realistic, well-structured study plan. Respond ONLY with valid JSON."""
 

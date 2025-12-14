@@ -62,13 +62,17 @@ class Topic(SQLModel, table=True):
 class StudySession(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     plan_id: int = Field(foreign_key="studyplan.id", index=True)
-    topic_id: int = Field(foreign_key="topic.id", index=True)
+    topic_id: Optional[int] = Field(default=None, foreign_key="topic.id", index=True)
+    subject_name: str = Field(default="")
+    topic_name: str = Field(default="")
     scheduled_date: date
     scheduled_time: str = Field(default="09:00")
-    duration_minutes: int = Field(default=45)
+    duration_hours: float = Field(default=1.0)
+    duration_minutes: int = Field(default=60)
     status: SessionStatus = Field(default=SessionStatus.PENDING)
     priority: Priority = Field(default=Priority.MEDIUM)
     notes: Optional[str] = None
+    actual_duration: Optional[float] = None
     completed_at: Optional[datetime] = None
     original_date: Optional[date] = None
 
