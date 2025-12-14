@@ -1,0 +1,27 @@
+# Vercel-optimized requirements (lightweight for serverless)
+# Removed: chromadb, sentence-transformers (too memory-heavy)
+# Using OpenAI embeddings API instead of local models
+
+# Core Framework
+fastapi>=0.104.0
+python-multipart>=0.0.6
+python-dotenv>=1.0.0
+jinja2>=3.1.0
+aiofiles>=23.0.0
+
+# Database
+sqlmodel>=0.0.14
+
+# Pydantic for data validation
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# PDF Processing
+pypdf>=3.17.0
+
+# LLM Providers (API-based, lightweight)
+openai>=1.3.0
+groq>=0.4.0
+
+# HTTP client
+httpx==0.25.2

@@ -23,9 +23,12 @@ async def lifespan(app: FastAPI):
     create_db_and_tables()
     print("✅ Database initialized")
     
-    # Create upload directory
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    print("✅ Upload directory ready")
+    # Create upload directory (handles both local and Vercel /tmp)
+    try:
+        UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        print("✅ Upload directory ready")
+    except Exception as e:
+        print(f"⚠️ Upload directory setup: {e}")
     
     yield
     
