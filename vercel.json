@@ -15,8 +15,5 @@
       "dest": "/api/index.py"
     }
   ],
-  "installCommand": "PIP_NO_CACHE_DIR=1 pip install -r requirements-vercel.txt",
-  "env": {
-    "PIP_NO_CACHE_DIR": "1"
-  }
+  "installCommand": "bash install.sh"
 }
