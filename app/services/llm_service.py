@@ -1,25 +1,25 @@
 """
 LLM service for interacting with language models.
+Uses httpx for direct API calls (no heavy SDK dependencies).
 """
 from typing import Optional, List, Dict
-from openai import OpenAI
+import httpx
 from app.config import OPENAI_API_KEY, GROQ_API_KEY, DEFAULT_LLM_MODEL
 
 
 class LLMService:
-    """Service for interacting with LLM providers."""
+    """Service for interacting with LLM providers via direct HTTP calls."""
     
     def __init__(self, provider: str = "openai"):
         self.provider = provider
         
         if provider == "groq" and GROQ_API_KEY:
-            self.client = OpenAI(
-                api_key=GROQ_API_KEY,
-                base_url="https://api.groq.com/openai/v1"
-            )
-            self.default_model = "llama-3.3-70b-versatile"  # Updated from deprecated model
+            self.api_key = GROQ_API_KEY
+            self.base_url = "https://api.groq.com/openai/v1"
+            self.default_model = "llama-3.3-70b-versatile"
         else:
-            self.client = OpenAI(api_key=OPENAI_API_KEY)
+            self.api_key = OPENAI_API_KEY
+            self.base_url = "https://api.openai.com/v1"
             self.default_model = DEFAULT_LLM_MODEL
     
     def chat(
@@ -36,13 +36,23 @@ class LLMService:
         full_messages.extend(messages)
         
         try:
-            response = self.client.chat.completions.create(
-                model=model,
-                messages=full_messages,
-                temperature=temperature,
-                max_tokens=max_tokens
-            )
-            return response.choices[0].message.content
+            with httpx.Client(timeout=60.0) as client:
+                response = client.post(
+                    f"{self.base_url}/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": model,
+                        "messages": full_messages,
+                        "temperature": temperature,
+                        "max_tokens": max_tokens
+                    }
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data["choices"][0]["message"]["content"]
         except Exception as e:
             raise Exception(f"LLM API error: {str(e)}")
     

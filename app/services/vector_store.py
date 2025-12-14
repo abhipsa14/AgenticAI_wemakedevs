@@ -1,12 +1,13 @@
 """
 Vector store service using in-memory storage with OpenAI embeddings.
 Optimized for serverless deployment (Vercel).
+Uses httpx for direct API calls (no heavy SDK dependencies).
 """
 import os
 import json
+import httpx
 from typing import List, Dict, Optional
 from pathlib import Path
-from openai import OpenAI
 from app.config import CHROMA_PERSIST_DIR, OPENAI_API_KEY
 
 
@@ -17,7 +18,7 @@ class VectorStore:
         self.persist_dir = Path(persist_dir)
         self.persist_dir.mkdir(parents=True, exist_ok=True)
         self.collections: Dict[str, Dict] = {}
-        self.client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+        self.api_key = OPENAI_API_KEY
         self._load_collections()
     
     def _load_collections(self):
@@ -40,19 +41,29 @@ class VectorStore:
             pass
     
     def _get_embedding(self, text: str) -> List[float]:
-        """Get embedding for text using OpenAI."""
-        if not self.client:
+        """Get embedding for text using OpenAI API via httpx."""
+        if not self.api_key:
             # Fallback: simple hash-based pseudo-embedding for testing
             import hashlib
             hash_val = hashlib.md5(text.encode()).hexdigest()
             return [int(hash_val[i:i+2], 16) / 255.0 for i in range(0, 32, 2)]
         
         try:
-            response = self.client.embeddings.create(
-                model="text-embedding-3-small",
-                input=text[:8000]  # Limit text length
-            )
-            return response.data[0].embedding
+            with httpx.Client(timeout=30.0) as client:
+                response = client.post(
+                    "https://api.openai.com/v1/embeddings",
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "text-embedding-3-small",
+                        "input": text[:8000]  # Limit text length
+                    }
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data["data"][0]["embedding"]
         except Exception:
             # Fallback on error
             import hashlib

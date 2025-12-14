@@ -1,5 +1,5 @@
 # Vercel-optimized requirements (ultra-lightweight for serverless)
-# Pinned versions for binary wheels - reduces compile memory
+# Removed openai SDK - using httpx for direct API calls
 
 # Core Framework
 fastapi==0.109.0
@@ -18,8 +18,5 @@ pydantic-settings==2.1.0
 # PDF Processing
 pypdf==3.17.4
 
-# LLM Provider
-openai==1.6.1
-
-# HTTP client
+# HTTP client (used for OpenAI/Groq API calls)
 httpx==0.26.0

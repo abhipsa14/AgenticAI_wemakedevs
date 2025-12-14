@@ -1,5 +1,6 @@
 #!/bin/bash
 # Install packages one at a time to reduce peak memory usage
+# Removed openai SDK - will use httpx for API calls instead
 
 pip install --no-cache-dir --prefer-binary pydantic==2.5.3
 pip install --no-cache-dir --prefer-binary pydantic-settings==2.1.0
@@ -11,4 +12,3 @@ pip install --no-cache-dir --prefer-binary aiofiles==23.2.1
 pip install --no-cache-dir --prefer-binary sqlmodel==0.0.14
 pip install --no-cache-dir --prefer-binary pypdf==3.17.4
 pip install --no-cache-dir --prefer-binary httpx==0.26.0
-pip install --no-cache-dir --prefer-binary openai==1.6.1
