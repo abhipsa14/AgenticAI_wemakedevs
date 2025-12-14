@@ -49,7 +49,7 @@ async def chat(
     context = request.context or {}
     if plan:
         context['has_active_plan'] = True
-        context['plan_name'] = plan.name
+        context['plan_name'] = plan.title
     
     # Save user message
     user_msg = ChatMessage(

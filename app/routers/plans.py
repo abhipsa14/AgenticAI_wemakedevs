@@ -32,7 +32,7 @@ class CreatePlanRequest(BaseModel):
 
 class PlanResponse(BaseModel):
     id: int
-    name: str
+    title: str
     created_at: datetime
     is_active: bool
     plan_data: dict
