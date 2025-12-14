@@ -5,7 +5,7 @@ A **multi-agent AI system** that helps students with:
 - ❓ **Doubt Resolution** - Get answers from your own uploaded notes (RAG)
 - 📋 **Schedule Management** - Track progress and reschedule missed sessions
 
-## 🏗️ Architecture
+## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -37,7 +37,7 @@ A **multi-agent AI system** that helps students with:
 └───────────────┘ └───────────────┘ └───────────────┘
 ```
 
-## 🚀 Quick Start
+## How to start with the Project?
 
 ### 1. Clone and Setup
 
@@ -63,8 +63,8 @@ pip install -r requirements.txt
 # Copy example env file
 copy .env
 
-# Edit .env and add your OpenAI API key
-# OPENAI_API_KEY=your_key_here
+# Edit .env and add your Groq API key
+# GROQ API KEY = your_api_key
 ```
 
 ### 3. Run the Application
@@ -128,7 +128,7 @@ AgenticAI_wemakedevs/
 └── README.md
 ```
 
-## 🤖 Agents
+## 🤖 Agents used in Study Assistant - Multi-Agent System
 
 ### 1. Coordinator Agent
 - Detects user intent from messages
@@ -150,7 +150,7 @@ AgenticAI_wemakedevs/
 - Reschedules missed sessions intelligently
 - Provides progress summaries and tips
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Study Plans
 - `POST /api/plans/create` - Create new study plan
@@ -176,7 +176,7 @@ AgenticAI_wemakedevs/
 - **Backend**: FastAPI, Python 3.10+
 - **Database**: SQLite + SQLModel
 - **Vector Store**: ChromaDB
-- **LLM**: OpenAI GPT-4o-mini (configurable)
+- **LLM**: Groq or llama-3.3-70b(Configurable)
 - **PDF Processing**: PyMuPDF
 - **Frontend**: HTML, Tailwind CSS, Vanilla JS
 
@@ -224,10 +224,6 @@ DEBUG=true
 3. Commit changes (`git commit -m 'Add amazing feature'`)
 4. Push to branch (`git push origin feature/amazing`)
 5. Open a Pull Request
-
-## 📄 License
-
-MIT License - feel free to use this for learning and building!
 
 ---
 
